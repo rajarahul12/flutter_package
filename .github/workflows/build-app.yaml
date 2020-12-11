@@ -21,14 +21,14 @@ jobs:
         flutter test
 
     - name: Build app
-      working-directory: ./example
+      working-directory: ./Demo
       run: |
         flutter pub get
         flutter build apk
         flutter build ios --no-codesign
 
     - name: Lint podspec
-      working-directory: ./mobilefoundation/ios
+      working-directory: ./ios
       run: |
         pod spec lint
 
