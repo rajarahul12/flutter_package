@@ -49,14 +49,14 @@ jobs:
         flutter drive --target=test_driver/app.dart
         killall "Simulator"
     
-    - name: Run Tests when server not running on Android Emulator
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        target: default
-        arch: x86_64
-        profile: Nexus 6
-        script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
+    # - name: Run Tests when server not running on Android Emulator
+    #   uses: reactivecircus/android-emulator-runner@v2
+    #   with:
+    #     api-level: 29
+    #     target: default
+    #     arch: x86_64
+    #     profile: Nexus 6
+    #     script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
 
     - name: Setup MobileFirst Server using Docker
       working-directory: ./Demo
