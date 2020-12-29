@@ -47,8 +47,8 @@ jobs:
       working-directory: ./
       run: |
         echo "Updating the change log"
-        echo "\n## ${VERSION}" >> CHANGELOG.md
-        echo "\n* ${{ github.event.inputs.changeLog }}" >> CHANGELOG.md
+        echo -e "\n## ${VERSION}" >> CHANGELOG.md
+        echo -e "\n* ${{ github.event.inputs.changeLog }}" >> CHANGELOG.md
         if [[ -z $(git status -s) ]]
         then
           echo "No changes"
