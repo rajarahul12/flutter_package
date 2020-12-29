@@ -19,7 +19,7 @@ jobs:
         channel: 'stable'
     - name: Set version as env variable
       run: |
-        echo "VERSION=8.0.$(date +'%Y%m%d%H')" >> $GITHUB_ENV
+        echo "VERSION=8.0.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
     - name: Echo version number
       run: echo $NOW
     - name: Update version
