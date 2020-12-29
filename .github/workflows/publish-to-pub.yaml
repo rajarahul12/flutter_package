@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
     branches:
     - master
+    inputs:
+      changeLog:
+        description: "Content for the ChangeLog file"
+        required: false
+        default: "Version Update to"
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -41,6 +46,8 @@ jobs:
     - name: Update version
       working-directory: ./
       run: |
+        echo "Updating the change log"
+        echo "${{ github.event.inputs.changeLog }}"
         if [[ -z $(git status -s) ]]
         then
           echo "No changes"
