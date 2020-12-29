@@ -7,7 +7,7 @@ on:
       changeLog:
         description: "Content for the ChangeLog file"
         required: false
-        default: "Version Update to"
+        default: "Version Update"
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -47,7 +47,8 @@ jobs:
       working-directory: ./
       run: |
         echo "Updating the change log"
-        echo "${{ github.event.inputs.changeLog }}"
+        echo "\n## ${VERSION}" >> CHANGELOG.md
+        echo "\n* ${{ github.event.inputs.changeLog }}" >> CHANGELOG.md
         if [[ -z $(git status -s) ]]
         then
           echo "No changes"
