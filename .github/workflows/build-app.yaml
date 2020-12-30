@@ -85,6 +85,10 @@ jobs:
             case $line in
                 *"html"*)
                     echo "Mobile Foundation Admin Service is not up yet"
+                    if [ "$poll" -ge 10 ]; then
+                        echo "Mobile Foundation Server did not start"
+                        exit 1;
+                    fi
                     sleep 20
                     continue
                     ;;
@@ -99,11 +103,19 @@ jobs:
                     break;
                 else
                     echo "Mobile Foundation Server is not running"
+                    if [ "$poll" -ge 10 ]; then
+                        echo "Mobile Foundation Server did not start"
+                        exit 1;
+                    fi
                     sleep 20
                     continue
                 fi
             else
                 echo "No data available. Retry"
+                if [ "$poll" -ge 10 ]; then
+                    echo "Mobile Foundation Server did not start"
+                    exit 1;
+                fi
                 sleep 20
                 continue
             fi
