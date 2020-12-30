@@ -81,6 +81,14 @@ jobs:
             poll=$(( poll + 1 ))
             echo "Count --> $poll"
             curl --location --request GET http://192.168.99.100:9080/mfpadmin/management-apis/2.0/diagnostic --user "admin:admin" -o output.json
+            line=$(head -n 1 output.json)
+            case $line in
+                *"html"*)
+                    echo "Mobile Foundation Admin Service is not up yet"
+                    sleep 20
+                    continue
+                    ;;
+            esac
             MFPROJECT_LENGTH=$(node -pe 'JSON.parse(process.argv[1]).runningProjectStatuses.length' "$(cat output.json)")
             echo "Output status length ---> $MFPROJECT_LENGTH"
             if [ "$MFPROJECT_LENGTH" == "1" ]; then
