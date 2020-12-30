@@ -13,50 +13,53 @@ jobs:
       with:
         flutter-version: '1.22.4'
         channel: 'stable'
-
-    - name: Analyze and run tests
-      working-directory: ./
-      run: |
-        # flutter analyze
-        flutter test
-
-    - name: Build app
-      working-directory: ./Demo
-      run: |
-        flutter pub get
-        flutter build apk
-        flutter build ios --no-codesign
-
-    - name: Check if publishable
-      working-directory: ./
-      run: |
-        flutter pub publish --dry-run
-
-    - name: Check any issues with doc generation
-      working-directory: ./
-      run: |
-        flutter pub global activate dartdoc
-        flutter pub global run dartdoc:dartdoc
-
-    - name : Run Tests when server not running on iOS Simulator
-      working-directory: ./Demo
-      run: |
-        xcode-select -v
-        open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app
-        sleep 60
-        flutter pub get
-        flutter doctor -v 
-        flutter drive --target=test_driver/app.dart
-        killall "Simulator"
-    
-    - name: Run Tests when server not running on Android Emulator
-      uses: reactivecircus/android-emulator-runner@v2
+    - uses: actions/setup-node@v2
       with:
-        api-level: 29
-        target: default
-        arch: x86_64
-        profile: Nexus 6
-        script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
+        node-version: '12'
+
+    # - name: Analyze and run tests
+    #   working-directory: ./
+    #   run: |
+    #     # flutter analyze
+    #     flutter test
+
+    # - name: Build app
+    #   working-directory: ./Demo
+    #   run: |
+    #     flutter pub get
+    #     flutter build apk
+    #     flutter build ios --no-codesign
+
+    # - name: Check if publishable
+    #   working-directory: ./
+    #   run: |
+    #     flutter pub publish --dry-run
+
+    # - name: Check any issues with doc generation
+    #   working-directory: ./
+    #   run: |
+    #     flutter pub global activate dartdoc
+    #     flutter pub global run dartdoc:dartdoc
+
+    # - name : Run Tests when server not running on iOS Simulator
+    #   working-directory: ./Demo
+    #   run: |
+    #     xcode-select -v
+    #     open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app
+    #     sleep 60
+    #     flutter pub get
+    #     flutter doctor -v 
+    #     flutter drive --target=test_driver/app.dart
+    #     killall "Simulator"
+    
+    # - name: Run Tests when server not running on Android Emulator
+    #   uses: reactivecircus/android-emulator-runner@v2
+    #   with:
+    #     api-level: 29
+    #     target: default
+    #     arch: x86_64
+    #     profile: Nexus 6
+    #     script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
 
     - name: Setup MobileFirst Server using Docker
       working-directory: ./Demo
@@ -70,7 +73,33 @@ jobs:
         docker ps
         echo "CONTIANER_ID=${CONTIANER_ID}" >> $GITHUB_ENV
         echo "Container ID: ${CONTIANER_ID}"
-        sleep 120
+
+        poll=0
+
+        while [ "$poll" -lt 10 ]; do
+            poll=$(( poll + 1 ))
+            echo "Count --> $poll"
+            curl --location --request GET http://192.168.99.102:9080/mfpadmin/management-apis/2.0/diagnostic --user "admin:admin" -o output.json
+            MFPROJECT_LENGTH=$(node -pe 'JSON.parse(process.argv[1]).runningProjectStatuses.length' "$(cat output.json)")
+            echo "Output status length ---> $MFPROJECT_LENGTH"
+            if [ "$MFPROJECT_LENGTH" == "1" ]; then
+                echo "Checking status"
+                STATUS=$(node -pe 'JSON.parse(process.argv[1]).runningProjectStatuses[0].running' "$(cat output.json)")
+                if [ "$STATUS" == "true" ]; then
+                    echo "Mobile Foundation Server is UP : $STATUS"
+                    break;
+                else
+                    echo "Mobile Foundation Server is not running"
+                    sleep 20
+                    continue
+                fi
+            else
+                echo "No data available. Retry"
+                sleep 20
+                continue
+            fi
+        done
+
         echo "Getting the logs"
         docker logs ${CONTIANER_ID}
         curl http://192.168.99.100:9080/mfp/api/az/v1/token
@@ -115,19 +144,19 @@ jobs:
         curl -X POST "http://192.168.99.100:9080/mfpadmin/management-apis/2.0/runtimes/mfp/applications?async=false&locale=en_US" -H "Content-Type: application/json" --user "admin:admin" -H "cache-control: no-cache" -d @./registerandroidconfig.json -o output.json
         cat ./output.json
 
-    - name : Run Tests on iOS Simulator
-      working-directory: ./Demo
-      run: |
-        open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app
-        sleep 60
-        flutter drive --target=test_driver/app.dart
-        killall "Simulator"
+    # - name : Run Tests on iOS Simulator
+    #   working-directory: ./Demo
+    #   run: |
+    #     open -a /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app
+    #     sleep 60
+    #     flutter drive --target=test_driver/app.dart
+    #     killall "Simulator"
 
-    - name: Run Tests on Android Emulator
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 29
-        target: default
-        arch: x86_64
-        profile: Nexus 6
-        script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
+    # - name: Run Tests on Android Emulator
+    #   uses: reactivecircus/android-emulator-runner@v2
+    #   with:
+    #     api-level: 29
+    #     target: default
+    #     arch: x86_64
+    #     profile: Nexus 6
+    #     script: cd ./Demo && flutter pub get && flutter doctor -v && flutter drive --target=test_driver/app.dart
