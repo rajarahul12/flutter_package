@@ -74,6 +74,7 @@ jobs:
         echo "CONTIANER_ID=${CONTIANER_ID}" >> $GITHUB_ENV
         echo "Container ID: ${CONTIANER_ID}"
 
+        sleep 10
         poll=0
 
         while [ "$poll" -lt 10 ]; do
